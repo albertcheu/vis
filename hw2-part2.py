@@ -25,7 +25,7 @@ for fname in filenames:
     lines = data.readlines()[1:]
     data.close()
 
-    #numdays = len(lines)
+    numdays = len(lines)
     
     ##reverse the list to be in chronological order
     lines.reverse()
@@ -46,10 +46,10 @@ for fname in filenames:
     pass
 
 ## display MM/DD/YYYY
-#plt.gca().xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%Y'))
+plt.gca().xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%Y'))
 
 ## label each new day/month/year
-#plt.gca().xaxis.set_major_locator(dates.MonthLocator())
+plt.gca().xaxis.set_major_locator(dates.MonthLocator())
 
 ## plot each index
 width =0.23
@@ -58,24 +58,24 @@ for i in range(4):
     ## pair the i-th time series with its name
 
     ## Swap for line plot
-    #ax.plot(days[i],changes[i],label=filenames[i])
-    ax.bar(ind + i*width, changes[i], width, label=filenames[i])
+    ax.plot(days[i],changes[i],label=filenames[i])
+    #ax.bar(ind + i*width, changes[i], width, label=filenames[i])
     
     pass
 
-#plt.gcf().autofmt_xdate()
-ax.set_xticks(ind)
-ax.set(xlabel='Business Days since 2 Feb',
-       #xlabel='Time',
+plt.gcf().autofmt_xdate()
+#ax.set_xticks(ind)
+ax.set(#xlabel='Business Days since 2 Feb',
+       xlabel='Time',
        ylabel='Fractional change',
        ## Swap for line plot
-       #title='Stock Market Indices from 2017 to 2018')
-       title='Stock Market Indices from 3 Feb to 17 March, 2017')
+       title='Stock Market Indices from 2017 to 2018')
+       #title='Stock Market Indices from 3 Feb to 17 March, 2017')
 
-# ax.grid()
+ax.grid()
 ax.legend()
 
 ## display and save
-plt.show()
-#plt.savefig('stockMarket-Line.png')
+#plt.show()
+plt.savefig('stockMarket-Line.png')
 #plt.savefig('stockMarket-Bar.png')

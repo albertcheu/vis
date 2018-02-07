@@ -52,7 +52,7 @@ for fname in filenames:
 
 ## Figure 1: Small-multiple line charts
 def fig1(plt,days,values):
-    fig, axes = plt.subplots(2,2)
+    fig, axes = plt.subplots(2,2,figsize=(8,4))
 
     ## plot each index
     for i in range(4):
@@ -66,46 +66,51 @@ def fig1(plt,days,values):
         ## plot the i-th time series
         axes[i/2,i%2].plot(days[i],values[i])
         axes[i/2,i%2].grid()
-        ##axes[i/2,i%2].legend()
+
+        ## title and ylabel
         axes[i/2,i%2].set(title=filenames[i])
         if i%2 == 0: axes[i/2,i%2].set(ylabel='Value')
+        if i > 1: axes[i/2,i%2].set(xlabel='Time')
         pass
 
     plt.gcf().autofmt_xdate()
-    # ax.set(xlabel='Time',
-    #       ylabel='Value',
-    #       title='Stock Market Indices from 2017 to 2018')
     
     ## display and save
-    plt.show()
-    #plt.savefig('stockMarket-Line.png')
+    #plt.show()
+    plt.savefig('stockMarket-SmallMultLine.png')
+    
     pass
+
+fig1(plt,days,values)
 
 #### Figure 2: Horizon graphs
-fig, axes = plt.subplots(2,2)
+def fig2(plt,days,values):
 
-## plot each index
-for i in range(4):
-    
-    ## display MM/DD/YYYY
-    axes[i/2,i%2].xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%y'))
-    
-    ## label each new day/month/year
-    axes[i/2,i%2].xaxis.set_major_locator(dates.MonthLocator())
-    
-    ## break up the i-th time series into quartiles
-    #axes[i/2,i%2].plot(days[i],changes[i])
-    horizon(axes[i/2,i%2],days[i],changes[i],4)
-    
-    axes[i/2,i%2].grid()
-    ##axes[i/2,i%2].legend()
+    fig, axes = plt.subplots(4,1,figsize=(8,4))
+    plt.subplots_adjust(hspace=0.5)
 
-    axes[i/2,i%2].set(title=filenames[i])
-    if i%2 == 0: axes[i/2,i%2].set(ylabel='Value')
+    ## plot each index
+    for i in range(4):
+    
+        ## display MM/DD/YYYY
+        axes[i].xaxis.set_major_formatter(dates.DateFormatter('%m/%d/%y'))
+    
+        ## label each new day/month/year
+        axes[i].xaxis.set_major_locator(dates.MonthLocator())
+        
+        ## break up the i-th time series into quartiles
+        horizon(axes[i],days[i],values[i],4)
+        
+        axes[i].grid()
+        axes[i].set(title=filenames[i],ylabel='Value',xlabel='Time')
+        
+        pass
+
+    plt.gcf().autofmt_xdate()
+    
+    ## display and save
+    #plt.show()
+    plt.savefig('stockMarket-Horizon.png')
     pass
 
-plt.gcf().autofmt_xdate()
-
-## display and save
-plt.show()
-#plt.savefig('stockMarket-Horizon.png')
+fig2(plt,days,values)
