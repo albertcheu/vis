@@ -1,4 +1,6 @@
 def horizonHelper(ax,x,y,numLayers,color):
+    zeroes = list(0 for xval in x)
+    
     ## find how much vertical space each layer will take
     ymin,ymax = min(y),max(y)
     step = (ymax-ymin) / numLayers
@@ -13,8 +15,8 @@ def horizonHelper(ax,x,y,numLayers,color):
             elif yval < ymin+i*step: yi.append(0)
             else: yi.append(step)
             pass
-        ax.plot(x,yi,color=color,alpha=(i+1)/numLayers)
-        
+        #ax.plot(x,yi,color=color,alpha=float((i+1))/numLayers)
+        ax.fill_between(x,yi,zeroes,color=color,alpha=float(i+1)/numLayers)
         pass
     
     pass
