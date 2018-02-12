@@ -8,19 +8,19 @@ import matplotlib.dates as dates
 import datetime as dt
 
 from horizon import horizon
-#from splom import splom
+from splom import splom
 
 ## loop through the csv's
 filenames = ['DowJones','NASDAQ','NYSE','SP500']
 suffix = '-HistoricalPrices.csv'
 
 values = []
-changes = []
+#changes = []
 days = []
 for fname in filenames:
 
     values.append([])
-    changes.append([])
+    #changes.append([])
     days.append([])
     
     data = open(fname+suffix)
@@ -41,10 +41,10 @@ for fname in filenames:
         values[-1].append(value)
         
         ## record percent changed
-        if initValue == 0:        
-            initValue = value
-            pass
-        changes[-1].append((value - initValue) / initValue)
+        # if initValue == 0:        
+        #     initValue = value
+        #     pass
+        # changes[-1].append((value - initValue) / initValue)
 
         pass
     pass
@@ -81,7 +81,7 @@ def fig1(plt,days,values):
     
     pass
 
-fig1(plt,days,values)
+#fig1(plt,days,values)
 
 #### Figure 2: Horizon graphs
 def fig2(plt,days,values):
@@ -113,4 +113,14 @@ def fig2(plt,days,values):
     plt.savefig('stockMarket-Horizon.png')
     pass
 
-fig2(plt,days,values)
+#fig2(plt,days,values)
+
+#### Figure 3: Scatter-plot matrix
+def fig3(plt,values):
+
+    splom(plt,values,filenames,'Correlations between market indices, Feb 2017 - Feb 2018')
+    #plt.show()
+    plt.savefig('stockMarket-SPLOM.png')
+    pass
+
+fig3(plt,values)

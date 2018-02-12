@@ -65,11 +65,11 @@ def linePlot(plt):
     ax.legend()
 
     ## display and save
-    plt.show()
+    ##plt.show()
     plt.savefig('stockMarket-Line.png')
     pass
 
-#linePlot(plt)
+##linePlot(plt)
 
 def barPlot(plt):
     ## number of days to display, width of bar, and list from 0 to numdays-1
@@ -92,7 +92,7 @@ def barPlot(plt):
     ax.legend()
 
     ## display and save
-    plt.show()
+    ##plt.show()
     plt.savefig('stockMarket-Bar.png')
     
     pass
