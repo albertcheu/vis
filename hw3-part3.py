@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from matplotlib.ticker import FuncFormatter
 import matplotlib.pyplot as plt
 import numpy as np
 from math import floor
@@ -35,12 +36,13 @@ for i in range(1,len(lines)):
         year.append(int(row[23-1]))#W
         cond.append(row[47-1])#R_OVERALL_COND = AU
         
-        ac_type = row[44-1]
-        color = 'gray'
-        if ac_type in ('C','D'):
-            color = 'red'
+        ac_type = row[44-1]#R_AC = AR
+
+        hasAC = True
+        if ac_type == 'N': #alternatives: ('C','D'):
+            hasAC = False
             pass
-        ac.append(color)#R_AC = AR
+        ac.append(hasAC)
         
         pass
 
@@ -48,33 +50,38 @@ for i in range(1,len(lines)):
 
 n = len(value)
 
+#def scaleDown(x,pos):
+#    return '%d' % (x/1000)
+
 #Tasks: are houses with ac common? if two houses have the same area, does having ac increase the value?
 #encoding: scatter plot
 #color map: categorical, with red indicating having ac and gray for not
 
 def valueVsArea(plt):
-    
-    #move the red points to the end (draw on top)
-    back = n-1
-    for i in range(n):
-        
-        if i!=back and ac[i] == 'red':
-            area[i], area[back] = (area[back],area[i])
-            value[i], value[back] = (value[back],value[i])
-            ac[i], ac[back] = (ac[back],ac[i])
-            year[i], year[back] = (year[back],ac[i])
-            cond[i], cond[back] = (cond[back],ac[i])
 
-            back -= 1
+    ##partition by ac
+    areaFalse,areaTrue,valueFalse,valueTrue = [],[],[],[]
+    for i in range(n):
+        if ac[i]:
+            areaTrue.append(area[i])
+            valueTrue.append(value[i])
+            pass
+        else:
+            areaFalse.append(area[i])
+            valueFalse.append(value[i])
             pass
         pass
     
     ## labels, title, legend
     
-    plt.scatter(area, value, c=ac,marker='.')
+    plt.scatter(areaFalse, valueFalse, c='gray',marker='.',label='No A/C')
+    plt.scatter(areaTrue, valueTrue, c='red',marker='.',label='A/C')
     plt.xlabel("Total living area (square feet)")
     plt.ylabel("Total property value")
-    #plt.legend(loc=2)
+    plt.legend(loc=4)
+    plt.title('Residential Building Value vs Area')
+
+    #plt.set_major_formatter(FuncFormatter(scaleDown))
     
     ## display and save
     plt.show()
@@ -90,8 +97,8 @@ def valueVsArea(plt):
 
 def ageVsArea(plt):
     la,ua,ly,uy = min(area),max(area),min(year),max(year)
-    #every 500 sq ft gets a bin
-    abins = 1 + ((ua-la) / 500)
+    #every 100 sq ft gets a bin
+    abins = 1 + ((ua-la) / 100)
     #every decade gets a bin
     ybins = 1 + ((uy-ly) / 10)
     
@@ -106,16 +113,19 @@ def ageVsArea(plt):
     for i in range(n):
         y = year[i]
         a = area[i]
-        heatmap[(a-la)/500][(y-ly)/10] += 1
+        heatmap[(a-la)/100][(y-ly)/10] += 1
         pass
     
     plt.imshow(heatmap, cmap='gray_r', extent=[ly,uy,ua,la],
                interpolation='nearest',aspect='auto')
+    plt.title('Distribution of Residential Buildings, by Area & Age')
+    plt.ylabel('Living Area, in 100 sq ft')
+    plt.xlabel('Year Built')
     
     plt.show()
     pass
 
-ageVsArea(plt)
+#ageVsArea(plt)
 
 ##Task: what is the distribution of value for each building style?
 ##encoding: stacked bar plot (a heatmap isn't as pleasing)
@@ -156,7 +166,6 @@ def valueVsCondition(plt):
             pass
         
         pass
-    print bars
     
     width = 0.35
     ind = np.arange(5)
@@ -164,11 +173,28 @@ def valueVsCondition(plt):
     cmap = plt.get_cmap('coolwarm')
     
     for i in range(numStacks):
-        plt.bar(ind,bars[i],width,bottom=bottom,color=cmap(i/float(numStacks)))
+        if i < numStacks/2:
+            begin = lv+i*lowerBinSize
+            end = begin + lowerBinSize
+            pass
+        else:
+            begin = lv+(numStacks/2)*lowerBinSize+(i-numStacks/2)*upperBinSize
+            end = begin + upperBinSize
+            pass
+        
+        plt.bar(ind,bars[i],width,bottom=bottom,
+                color=cmap(i/float(numStacks)),
+                label='%d - %d'% (begin,end))
         for j in range(5):
             bottom[j] += bars[i][j]
             pass        
         pass
+
+    plt.title('Residential Building Value across Quality')
+    plt.ylabel('Number of buildings')
+    plt.xlabel('Overall building condition')
+    plt.xticks(ind,['Average','Excellent','Fair','Good','Poor'])
+    plt.legend(loc=1,title='Value Bracket')
     
     plt.show()
     pass
