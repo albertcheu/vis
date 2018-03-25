@@ -9,10 +9,13 @@ data = open('bostonProperty.csv','r')
 lines = data.readlines()
 data.close()
 
+##columns of interest
 value,area,year,cond,ac = ([],[],[],[],[])
-condToIndex = {'A':0,'E':1,'F':2,'G':3,'P':4,'S':5}
+
+##converts the string to an integer
 conditionToIndex = {'A':0,'E':1,'F':2,'G':3,'P':4}
 
+##I am interested in residential buildings only
 for i in range(1,len(lines)):
     row = lines[i].strip().split(',')
     
@@ -50,10 +53,7 @@ for i in range(1,len(lines)):
 
 n = len(value)
 
-#def scaleDown(x,pos):
-#    return '%d' % (x/1000)
-
-#Tasks: are houses with ac common? if two houses have the same area, does having ac increase the value?
+#Tasks: any correlation between area and value? if two houses have the same area, does having ac increase the value?
 #encoding: scatter plot
 #color map: categorical, with red indicating having ac and gray for not
 
@@ -72,23 +72,22 @@ def valueVsArea(plt):
             pass
         pass
     
-    ## labels, title, legend
-    
+    ## actually plot the data
     plt.scatter(areaFalse, valueFalse, c='gray',marker='.',label='No A/C')
     plt.scatter(areaTrue, valueTrue, c='red',marker='.',label='A/C')
+
+    ## labels, title, legend    
     plt.xlabel("Total living area (square feet)")
     plt.ylabel("Total property value")
     plt.legend(loc=4)
     plt.title('Residential Building Value vs Area')
 
-    #plt.set_major_formatter(FuncFormatter(scaleDown))
-    
     ## display and save
     plt.show()
     #plt.savefig('value-vs-area.png')
     pass
 
-#valueVsArea(plt)
+valueVsArea(plt)
 
 
 #Task: what is the distribution of house age and size?
@@ -101,7 +100,8 @@ def ageVsArea(plt):
     abins = 1 + ((ua-la) / 100)
     #every decade gets a bin
     ybins = 1 + ((uy-ly) / 10)
-    
+
+    ## make bins
     heatmap = []
     for i in range(abins):
         heatmap.append([])
@@ -110,37 +110,44 @@ def ageVsArea(plt):
             pass
         pass
 
+    ## fill bins
     for i in range(n):
         y = year[i]
         a = area[i]
         heatmap[(a-la)/100][(y-ly)/10] += 1
         pass
-    
+
+    ## make the heatmap
     plt.imshow(heatmap, cmap='gray_r', extent=[ly,uy,ua,la],
                interpolation='nearest',aspect='auto')
     plt.title('Distribution of Residential Buildings, by Area & Age')
     plt.ylabel('Living Area, in 100 sq ft')
     plt.xlabel('Year Built')
+
+    plt.colorbar(label='Number of buildings')
     
     plt.show()
     pass
 
-#ageVsArea(plt)
+ageVsArea(plt)
 
-##Task: what is the distribution of value for each building style?
-##encoding: stacked bar plot (a heatmap isn't as pleasing)
-##color map: diverging
-##  determine min,median,max values; map to blue,purple,red
-##  segment values into six bins
+##  Tasks: how many houses are of excellent/average/poor quality? what is the distribution of value for each category?
+##  encoding: stacked bar plot (a heatmap isn't as pleasing)
+##  color map: diverging
+##    determine min,median,max values; map to blue,purple,red
+##    segment this domain into bins such that the middle bin(s) are at the median
 
 def valueVsCondition(plt):
-    numStacks = 10
-    
+    numStacks = 12
+
+    ## find min, median, max
     sv = sorted(value)
     lv,mv,uv = sv[0],sv[n/2],sv[n-1]
+    binSize = (uv - lv) / float(numStacks)
     lowerBinSize = (mv-lv)/(numStacks/2)
     upperBinSize = (uv-mv)/(numStacks/2)
-    
+
+    ## define bins = stacks in the bar chart
     bars = []
     for i in range(numStacks):
         bars.append([])
@@ -149,53 +156,49 @@ def valueVsCondition(plt):
             bars[-1].append(0)
             pass
         pass
+
+    ## fill the bins = determine size of each stack
     
-    #print lv,mv,uv
     for i in range(n):
         v = value[i]
-        
-        condBar = conditionToIndex[cond[i]]
 
-        ##bottom half
-        if v <= mv:
-            bars[min(numStacks/2 - 1,(v-lv)/lowerBinSize)][condBar] += 1
-            pass
-        ##top half
-        else:
-            bars[min(numStacks-1,numStacks/2+(v-mv)/upperBinSize)][condBar] += 1
-            pass
-        
+        condBar = conditionToIndex[cond[i]]
+        bars[min(int((v-lv)/binSize),numStacks-1)][condBar] += 1
+
         pass
+
+    ## bin containing median value should be gray
+    medBin = int((mv-lv) / binSize)
     
+    ## plot the data
     width = 0.35
     ind = np.arange(5)
+    ## the bottom of each layer of bars varies
     bottom = [0,0,0,0,0]
-    cmap = plt.get_cmap('coolwarm')
-    
+    cmap = plt.get_cmap('coolwarm')    
+
     for i in range(numStacks):
-        if i < numStacks/2:
-            begin = lv+i*lowerBinSize
-            end = begin + lowerBinSize
-            pass
-        else:
-            begin = lv+(numStacks/2)*lowerBinSize+(i-numStacks/2)*upperBinSize
-            end = begin + upperBinSize
-            pass
+        begin,end = lv+i*binSize,lv+(i+1)*binSize
+        if i < numStacks-1: end -= 1
+
+        if i <= medBin: color = (float(i)/medBin) / 2.0
+        else: color = 0.5 + (float(i)-medBin)/(2*(numStacks-medBin))
         
         plt.bar(ind,bars[i],width,bottom=bottom,
-                color=cmap(i/float(numStacks)),
+                color=cmap(color),
                 label='%d - %d'% (begin,end))
         for j in range(5):
             bottom[j] += bars[i][j]
-            pass        
+            pass
         pass
 
+    ## title, axes, legend
     plt.title('Residential Building Value across Quality')
     plt.ylabel('Number of buildings')
     plt.xlabel('Overall building condition')
     plt.xticks(ind,['Average','Excellent','Fair','Good','Poor'])
     plt.legend(loc=1,title='Value Bracket')
-    
+
     plt.show()
     pass
 
